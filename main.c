@@ -14,148 +14,9 @@ int EXPECTED_STEPS[FILECOUNT] = {100,      100,          100,       100,        
 int HOWMUCH[FILECOUNT] = {1,      1,          1,       1,        1,         1,       1,        1,      1,          1,               1,         1,        1,           1,         1, 10, 10, 10};
 
 #define DEBUG 0
+#define STEPCOUNT_CONFIGURABLE
 
-/*
-
-Accel
-Integer
-10
-int8_t
-int
-
-*/
-/*
-
-FIR filter designed with
- http://t-filter.appspot.com
-
-sampling frequency: 12.5 Hz
-
-fixed point precision: 10 bits
-
-FIR filter designed with
- http://t-filter.appspot.com
-
-sampling frequency: 12.5 Hz
-
-fixed point precision: 10 bits
-
-* 0 Hz - 1.1 Hz
-  gain = 0
-  desired attenuation = -40 dB
-  actual attenuation = n/a
-
-* 1.3 Hz - 2.5 Hz
-  gain = 1
-  desired ripple = 5 dB
-  actual ripple = n/a
-
-* 2.7 Hz - 6.25 Hz
-  gain = 0
-  desired attenuation = -40 dB
-  actual attenuation = n/a
-
-*/
-
-#define ACCELFILTER_TAP_NUM 57
-
-typedef struct {
-  int8_t history[ACCELFILTER_TAP_NUM];
-  unsigned int last_index;
-} AccelFilter;
-
-static int8_t filter_taps[ACCELFILTER_TAP_NUM] = {
-  -2,
-  4,
-  4,
-  1,
-  -1,
-  0,
-  2,
-  -3,
-  -12,
-  -13,
-  2,
-  24,
-  29,
-  6,
-  -25,
-  -33,
-  -13,
-  10,
-  11,
-  -1,
-  3,
-  29,
-  41,
-  4,
-  -62,
-  -89,
-  -34,
-  62,
-  110,
-  62,
-  -34,
-  -89,
-  -62,
-  4,
-  41,
-  29,
-  3,
-  -1,
-  11,
-  10,
-  -13,
-  -33,
-  -25,
-  6,
-  29,
-  24,
-  2,
-  -13,
-  -12,
-  -3,
-  2,
-  0,
-  -1,
-  1,
-  4,
-  4,
-  -2
-};
-
-void AccelFilter_init(AccelFilter* f) {
-  int i;
-  for(i = 0; i < ACCELFILTER_TAP_NUM; ++i)
-    f->history[i] = 0;
-  f->last_index = 0;
-}
-
-void AccelFilter_put(AccelFilter* f, int8_t input) {
-  f->history[f->last_index++] = input;
-  if(f->last_index == ACCELFILTER_TAP_NUM)
-    f->last_index = 0;
-}
-
-int AccelFilter_get(AccelFilter* f) {
-  int acc = 0;
-  int index = f->last_index, i;
-  for(i = 0; i < ACCELFILTER_TAP_NUM; ++i) {
-    index = index != 0 ? index-1 : ACCELFILTER_TAP_NUM-1;
-    acc += (int)f->history[index] * (int)filter_taps[i];
-  };
-  return acc >> 2; // MODIFIED - was 10. Now returns 8 bits of fractional data
-}
-
-int AccelFilter_getHistory(AccelFilter* f, int index) {
-  index = f->last_index - index;
-  while (index<0) index += ACCELFILTER_TAP_NUM;
-  return f->history[index];
-}
-
-AccelFilter accelFilter;
-
-// ===============================================================
+#include "../Espruino/libs/misc/stepcount.c"
 
 typedef struct {
   short x,y,z;
@@ -165,10 +26,7 @@ typedef struct {
 Vector3 acc;
 /// squared accelerometer magnitude
 int accMagSquared, accMag;
-int accScaled;
-int accFiltered;
-/// accelerometer difference since last reading
-int accdiff;
+uint32_t stepCounter = 0;
 
 bool origStepWasLow;
 /// How low must acceleration magnitude squared get before we consider the next rise a step?
@@ -176,44 +34,6 @@ int origStepCounterThresholdLow = (8192-80)*(8192-80);
 /// How high must acceleration magnitude squared get before we consider it a step?
 int origStepCounterThresholdHigh = (8192+80)*(8192+80);
 int origStepCounter = 0;
-
-#define STEPCOUNTERTHRESHOLD_MIN 1000
-#define STEPCOUNTERTHRESHOLD_MAX 6000
-#define STEPCOUNTERTHRESHOLD_STEP 20
-int stepCounterThresholdMin = 1600;
-
-#define STEPCOUNTERAVR_MIN 0
-#define STEPCOUNTERAVR_MAX 0
-#define STEPCOUNTERAVR_STEP 1
-int stepCounterAvr = 1;
-
-
-
-int stepCounterThreshold;
-/// Current steps since reset
-uint32_t stepCounter = 0;
-/// has acceleration counter passed stepCounterThresholdLow?
-bool stepWasLow;
-
-// quick integer square root
-// https://stackoverflow.com/questions/31117497/fastest-integer-square-root-in-the-least-amount-of-instructions
-unsigned short int int_sqrt32(unsigned int x)
-{
-    unsigned short int res=0;
-    unsigned short int add= 0x8000;   
-    int i;
-    for(i=0;i<16;i++)
-    {
-        unsigned short int temp=res | add;
-        unsigned int g2=temp*temp;      
-        if (x>=g2)
-        {
-            res=temp;           
-        }
-        add>>=1;
-    }
-    return res;
-}
 
 void stepCount(int newx, int newy, int newz) {
   int dx = newx-acc.x;
@@ -223,57 +43,25 @@ void stepCount(int newx, int newy, int newz) {
   acc.y = newy;
   acc.z = newz;
   accMagSquared = acc.x*acc.x + acc.y*acc.y + acc.z*acc.z;
-  accMag = int_sqrt32(accMagSquared);
-  int v = (accMag-8192)>>5;
-  //printf("v %d\n",v);
-  //if (v>127 || v<-128) printf("Out of range %d\n", v);
-  if (v>127) v = 127;
-  if (v<-128) v = -128;
-  accScaled = v;
-  AccelFilter_put(&accelFilter, v);
-  accFiltered = AccelFilter_get(&accelFilter);
-  accdiff = dx*dx + dy*dy + dz*dz;
-  // origibal step counter
+  // original step counter
   if (accMagSquared < origStepCounterThresholdLow)
     origStepWasLow = true;
   else if ((accMagSquared > origStepCounterThresholdHigh) && origStepWasLow) {
     origStepWasLow = false;
     origStepCounter++;
   }
-
-  // update threshold
-  if (stepCounterAvr) {
-    int a = (AccelFilter_getHistory(&accelFilter, (ACCELFILTER_TAP_NUM/2)-2) << 12) * 3;
-    if (a<0) a=-a;
-    if (a > stepCounterThreshold) 
-      stepCounterThreshold = a;//(stepCounterThreshold+a) >> 1;
-    stepCounterThreshold -= 256*64;
-    if (stepCounterThreshold < stepCounterThresholdMin<<8)
-      stepCounterThreshold = stepCounterThresholdMin<<8;
-  }
-
-  // check for step counter
-  int t = stepCounterThreshold>>8;
-  if (accFiltered < -t)
-    stepWasLow = true;
-  else if ((accFiltered > t) && stepWasLow) {
-    stepWasLow = false;   
-
+  // Espruino step counter
+  if (stepcount_new(accMagSquared))
     stepCounter++;
-    if (DEBUG>1) printf("step %d \n", stepCounter);
-  }
-
-
 }
+
 
 void testStepCount(char *filename, char *outfile) {
   // init
   origStepCounter = 0;
   origStepWasLow = 0;
   stepCounter  = 0;
-  stepWasLow = 0;
-  stepCounterThreshold = stepCounterThresholdMin<<8;
-  AccelFilter_init(&accelFilter);
+  stepcount_init();
   // go
   char * line = NULL;
   size_t len = 0;
@@ -285,7 +73,7 @@ void testStepCount(char *filename, char *outfile) {
     fop = fopen(outfile, "w");
     fprintf(fop, "n,x,y,z,scaled,filtered,origSteps,steps,thresh\n");
   }
-  int x,y,z; 
+  int x,y,z;
   bool first = true;
   while ((read = getline(&line, &len, fp)) != -1) {
     long time = strtol(strtok(line, ","), NULL, 10);
@@ -352,7 +140,7 @@ void main() {
   printf("TOTAL DIFFERENCE %d\n", int_sqrt32(d));
   // =======================
   // comment this out to brute-force over the data to find the best coefficients
-  return; 
+  return;
   // =======================
   int bestDiff = 0xFFFFFFF;
   int best_stepCounterThresholdMin = 0;
