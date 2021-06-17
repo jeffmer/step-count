@@ -17,7 +17,9 @@ Total difference in steps between expected and calculated is shown.
 * `expected` = what we expect
 * `orig` = step count based on the most trivial step counter
 
-You can also comment out the `return` line in `void main()` to brute-force over all available coefficients to find the best ones.
+Type `make && ./main --bruteforce` to run a brute-force check for all
+possible values using the offline data from `data`. You can then feed
+these back into `stepcount.c`
 
 ## Graphs
 

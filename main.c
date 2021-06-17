@@ -135,25 +135,53 @@ static int testAll(bool outputFiles) {
 }
 
 
-void main() {
+int main(int argc, char *argv[]) {
+  printf("github.com/gfwilliams/step-count\n");
+  printf("----------------------------------\n");
+
+  bool bruteForce = false;
+  printf("argc %d\n",argc);
+  if (argc>1) {
+    if (strcmp(argv[1],"--bruteforce") == 0) { // match
+      bruteForce = true;
+    } else {
+      printf("Unknown argument!\n\n");
+      printf("USAGE:\n");
+      printf(" ./main\n");
+      printf("   Run single test on all available step data\n");
+      printf(" ./main --bruteforce\n");
+      printf("   Brute-force all available arguments on all available step data\n");
+      return 1;
+    }
+  }
+
   int d = testAll(true);
   printf("TOTAL DIFFERENCE %d\n", int_sqrt32(d));
   // =======================
   // comment this out to brute-force over the data to find the best coefficients
-  return;
+  if (!bruteForce) return 0;
   // =======================
   int bestDiff = 0xFFFFFFF;
   int best_stepCounterThresholdMin = 0;
   int best_stepCounterAvr = 0;
+  int best_stepCounterHistory = 0;
+  int best_stepCounterHistoryTime = 0;
 
-  for (stepCounterThresholdMin = STEPCOUNTERTHRESHOLD_MIN; stepCounterThresholdMin<=STEPCOUNTERTHRESHOLD_MAX; stepCounterThresholdMin+=STEPCOUNTERTHRESHOLD_STEP) {
-    for (stepCounterAvr = STEPCOUNTERAVR_MIN; stepCounterAvr<=STEPCOUNTERAVR_MAX; stepCounterAvr+=STEPCOUNTERAVR_STEP) {
-      printf("testing %d %d\n", stepCounterThresholdMin, stepCounterAvr);
-      int d = testAll(false);
-      if (d<bestDiff) {
-        bestDiff = d;
-        best_stepCounterThresholdMin = stepCounterThresholdMin;
-        best_stepCounterAvr = stepCounterAvr;
+  for (STEPCOUNTERTHRESHOLD = STEPCOUNTERTHRESHOLD_MIN; STEPCOUNTERTHRESHOLD<=STEPCOUNTERTHRESHOLD_MAX; STEPCOUNTERTHRESHOLD+=STEPCOUNTERTHRESHOLD_STEP) {
+    for (STEPCOUNTERAVR = STEPCOUNTERAVR_MIN; STEPCOUNTERAVR<=STEPCOUNTERAVR_MAX; STEPCOUNTERAVR+=STEPCOUNTERAVR_STEP) {
+      for (STEPCOUNTERHISTORY = STEPCOUNTERHISTORY_MIN; STEPCOUNTERHISTORY<=STEPCOUNTERHISTORY_MAX; STEPCOUNTERHISTORY+=STEPCOUNTERHISTORY_STEP) {
+        for (STEPCOUNTERHISTORY_TIME = STEPCOUNTERHISTORY_TIME_MIN; STEPCOUNTERHISTORY_TIME<=STEPCOUNTERHISTORY_TIME_MAX; STEPCOUNTERHISTORY_TIME+=STEPCOUNTERHISTORY_TIME_STEP) {
+          printf("testing %d %d %d %d\n", STEPCOUNTERTHRESHOLD, STEPCOUNTERAVR, STEPCOUNTERHISTORY, STEPCOUNTERHISTORY_TIME);
+          int d = testAll(false);
+          if (d<bestDiff) {
+            printf("           BEST %d\n", d);
+            bestDiff = d;
+            best_stepCounterThresholdMin = STEPCOUNTERTHRESHOLD;
+            best_stepCounterAvr = STEPCOUNTERAVR;
+            best_stepCounterHistory = STEPCOUNTERHISTORY;
+            best_stepCounterHistoryTime = STEPCOUNTERHISTORY_TIME;
+          }
+        }
       }
     }
   }
@@ -161,4 +189,7 @@ void main() {
   printf("best difference %d\n", int_sqrt32(d));
   printf("stepCounterThresholdMin %d\n", best_stepCounterThresholdMin);
   printf("stepCounterAvr %d\n", best_stepCounterAvr);
+  printf("stepCounterHistory %d\n", best_stepCounterHistory);
+  printf("stepCounterHistoryTime %d\n", best_stepCounterHistoryTime);
+  return 0;
 }
