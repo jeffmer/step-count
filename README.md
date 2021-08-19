@@ -24,3 +24,5 @@ these back into `stepcount.c`
 ## Graphs
 
 With `gnuplot` installed you can run `gnuplot -p gnuplot.plot` to plot graphs of acceleration vs step count/theshold data for debugging.
+
+To compile, run and display the most recent graphs, you can do `pkill gnuplot;make clean;make && ./main && gnuplot -p gnuplot.plot`

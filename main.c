@@ -88,10 +88,10 @@ void testStepCount(char *filename, char *outfile) {
     int stepCounterP = stepCounter;
     stepCount(x,y,z);
     if (fop) {
-      int M = 50;
-      int a = (origStepCounter-origStepCounterP)*20 + M; // old - high
-      int b = -(stepCounter-stepCounterP)*20 - M; // new - low
-      fprintf(fop, "%d,%d,%d,%d,%d,%d,%d,%d,%d\n", n++,x,y,z,accScaled>>1,accFiltered>>7,a,b,stepCounterThreshold>>15);
+      int M = 6000;
+      int a = (origStepCounter-origStepCounterP)*500 + M; // old - high
+      int b = -(stepCounter-stepCounterP)*500 - M; // new - low
+      fprintf(fop, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n", n++,x,y,z,accScaled<<6,accFiltered,a,b,stepCounterThresholdLo,stepCounterThresholdHi);
     }
   }
   // ensure we flush filter to get final steps out
@@ -100,10 +100,10 @@ void testStepCount(char *filename, char *outfile) {
     int stepCounterP = stepCounter;
     stepCount(x,y,z);
     if (fop) {
-      int M = 50;
-      int a = (origStepCounter-origStepCounterP)*20 + M; // old - high
-      int b = -(stepCounter-stepCounterP)*20 - M; // new - low
-      fprintf(fop, "%d,%d,%d,%d,%d,%d,%d,%d,%d\n", n++,x,y,z,accScaled>>1,accFiltered>>7,a,b,stepCounterThreshold>>15);
+      int M = 6000;
+      int a = (origStepCounter-origStepCounterP)*500 + M; // old - high
+      int b = -(stepCounter-stepCounterP)*500 - M; // new - low
+      fprintf(fop, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n", n++,x,y,z,accScaled<<6,accFiltered,a,b,stepCounterThresholdLo,stepCounterThresholdHi);
     }
   }
   if (fop) fclose(fop);
@@ -162,22 +162,22 @@ int main(int argc, char *argv[]) {
   if (!bruteForce) return 0;
   // =======================
   int bestDiff = 0xFFFFFFF;
-  int best_stepCounterThresholdMin = 0;
-  int best_stepCounterAvr = 0;
+  int best_stepCounterThresholdLo = 0;
+  int best_stepCounterThresholdHi = 0;
   int best_stepCounterHistory = 0;
   int best_stepCounterHistoryTime = 0;
 
-  for (STEPCOUNTERTHRESHOLD = STEPCOUNTERTHRESHOLD_MIN; STEPCOUNTERTHRESHOLD<=STEPCOUNTERTHRESHOLD_MAX; STEPCOUNTERTHRESHOLD+=STEPCOUNTERTHRESHOLD_STEP) {
-    for (STEPCOUNTERAVR = STEPCOUNTERAVR_MIN; STEPCOUNTERAVR<=STEPCOUNTERAVR_MAX; STEPCOUNTERAVR+=STEPCOUNTERAVR_STEP) {
+  for (stepCounterThresholdLo = STEPCOUNTERTHRESHOLD_MIN; stepCounterThresholdLo<=STEPCOUNTERTHRESHOLD_MAX; stepCounterThresholdLo+=STEPCOUNTERTHRESHOLD_STEP) {
+    for (stepCounterThresholdHi = stepCounterThresholdLo+STEPCOUNTERTHRESHOLD_STEP; stepCounterThresholdHi<=STEPCOUNTERTHRESHOLD_MAX; stepCounterThresholdHi+=STEPCOUNTERTHRESHOLD_STEP) {
       for (STEPCOUNTERHISTORY = STEPCOUNTERHISTORY_MIN; STEPCOUNTERHISTORY<=STEPCOUNTERHISTORY_MAX; STEPCOUNTERHISTORY+=STEPCOUNTERHISTORY_STEP) {
         for (STEPCOUNTERHISTORY_TIME = STEPCOUNTERHISTORY_TIME_MIN; STEPCOUNTERHISTORY_TIME<=STEPCOUNTERHISTORY_TIME_MAX; STEPCOUNTERHISTORY_TIME+=STEPCOUNTERHISTORY_TIME_STEP) {
-          printf("testing %d %d %d %d\n", STEPCOUNTERTHRESHOLD, STEPCOUNTERAVR, STEPCOUNTERHISTORY, STEPCOUNTERHISTORY_TIME);
+          printf("testing %d %d %d %d\n", stepCounterThresholdLo, stepCounterThresholdHi, STEPCOUNTERHISTORY, STEPCOUNTERHISTORY_TIME);
           int d = testAll(false);
           if (d<bestDiff) {
             printf("           BEST %d\n", d);
             bestDiff = d;
-            best_stepCounterThresholdMin = STEPCOUNTERTHRESHOLD;
-            best_stepCounterAvr = STEPCOUNTERAVR;
+            best_stepCounterThresholdLo = stepCounterThresholdLo;
+            best_stepCounterThresholdHi = stepCounterThresholdHi;
             best_stepCounterHistory = STEPCOUNTERHISTORY;
             best_stepCounterHistoryTime = STEPCOUNTERHISTORY_TIME;
           }
@@ -187,8 +187,8 @@ int main(int argc, char *argv[]) {
   }
 
   printf("best difference %d\n", int_sqrt32(d));
-  printf("stepCounterThresholdMin %d\n", best_stepCounterThresholdMin);
-  printf("stepCounterAvr %d\n", best_stepCounterAvr);
+  printf("stepCounterThresholdLo %d\n", best_stepCounterThresholdLo);
+  printf("stepCounterThresholdHi %d\n", best_stepCounterThresholdHi);
   printf("stepCounterHistory %d\n", best_stepCounterHistory);
   printf("stepCounterHistoryTime %d\n", best_stepCounterHistoryTime);
   return 0;
