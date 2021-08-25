@@ -7,11 +7,11 @@
 #include <stdbool.h>
 
 #define PATH "data/"
-#define FILECOUNT  18
-const char *FILES[FILECOUNT] = {"100_1.csv","100_3.csv","100_5.csv","100_7.csv","100_2.csv","100_4.csv","100_6.csv","100.csv","cartron.csv","Guillaume_G.csv","HughB1.csv","Pablo.csv","d3nd3-o0.csv","HughB0.csv","HughB2.csv","HughB-nosteps1.csv","HughB-nosteps2.csv","HughB-nosteps3.csv"};
-int EXPECTED_STEPS[FILECOUNT] = {100,      100,          100,       100,        100,         100,       100,        100,      150,          150,               150,         150,        150,           150,         150, 0, 0, 0};
-// how much do wer care about these?
-int HOWMUCH[FILECOUNT] = {1,      1,          1,       1,        1,         1,       1,        1,      1,          1,               1,         1,        1,           1,         1, 10, 10, 10};
+#define FILECOUNT  7
+const char *FILES[FILECOUNT] = {"HughB-walk-1834.csv","HughB1.csv","HughB0.csv","HughB2.csv","HughB-nosteps1.csv","HughB-nosteps2.csv","HughB-nosteps3.csv"};
+int EXPECTED_STEPS[FILECOUNT] = {1834,       150,          150,               150,      0, 0, 0};
+// how much do we care about these?
+int HOWMUCH[FILECOUNT] = {5,      1,          1,       1,        1,         1,      1};
 
 #define DEBUG 0
 #define STEPCOUNT_CONFIGURABLE
@@ -51,8 +51,7 @@ void stepCount(int newx, int newy, int newz) {
     origStepCounter++;
   }
   // Espruino step counter
-  if (stepcount_new(accMagSquared))
-    stepCounter++;
+  stepCounter += stepcount_new(accMagSquared);
 }
 
 
@@ -91,7 +90,7 @@ void testStepCount(char *filename, char *outfile) {
       int M = 6000;
       int a = (origStepCounter-origStepCounterP)*500 + M; // old - high
       int b = -(stepCounter-stepCounterP)*500 - M; // new - low
-      fprintf(fop, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n", n++,x,y,z,accScaled<<6,accFiltered,a,b,stepCounterThresholdLo,stepCounterThresholdHi);
+      fprintf(fop, "%d,%d,%d,%d,%d,%d,%d,%d,%d\n", n++,x,y,z,accScaled<<6,accFiltered,a,b,stepCounterThreshold);
     }
   }
   // ensure we flush filter to get final steps out
@@ -103,7 +102,7 @@ void testStepCount(char *filename, char *outfile) {
       int M = 6000;
       int a = (origStepCounter-origStepCounterP)*500 + M; // old - high
       int b = -(stepCounter-stepCounterP)*500 - M; // new - low
-      fprintf(fop, "%d,%d,%d,%d,%d,%d,%d,%d,%d,%d\n", n++,x,y,z,accScaled<<6,accFiltered,a,b,stepCounterThresholdLo,stepCounterThresholdHi);
+      fprintf(fop, "%d,%d,%d,%d,%d,%d,%d,%d,%d\n", n++,x,y,z,accScaled<<6,accFiltered,a,b,stepCounterThreshold);
     }
   }
   if (fop) fclose(fop);
@@ -162,34 +161,19 @@ int main(int argc, char *argv[]) {
   if (!bruteForce) return 0;
   // =======================
   int bestDiff = 0xFFFFFFF;
-  int best_stepCounterThresholdLo = 0;
-  int best_stepCounterThresholdHi = 0;
-  int best_stepCounterHistory = 0;
-  int best_stepCounterHistoryTime = 0;
+  int best_stepCounterThreshold = 0;
 
-  for (stepCounterThresholdLo = STEPCOUNTERTHRESHOLD_MIN; stepCounterThresholdLo<=STEPCOUNTERTHRESHOLD_MAX; stepCounterThresholdLo+=STEPCOUNTERTHRESHOLD_STEP) {
-    for (stepCounterThresholdHi = stepCounterThresholdLo+STEPCOUNTERTHRESHOLD_STEP; stepCounterThresholdHi<=STEPCOUNTERTHRESHOLD_MAX; stepCounterThresholdHi+=STEPCOUNTERTHRESHOLD_STEP) {
-      for (STEPCOUNTERHISTORY = STEPCOUNTERHISTORY_MIN; STEPCOUNTERHISTORY<=STEPCOUNTERHISTORY_MAX; STEPCOUNTERHISTORY+=STEPCOUNTERHISTORY_STEP) {
-        for (STEPCOUNTERHISTORY_TIME = STEPCOUNTERHISTORY_TIME_MIN; STEPCOUNTERHISTORY_TIME<=STEPCOUNTERHISTORY_TIME_MAX; STEPCOUNTERHISTORY_TIME+=STEPCOUNTERHISTORY_TIME_STEP) {
-          printf("testing %d %d %d %d\n", stepCounterThresholdLo, stepCounterThresholdHi, STEPCOUNTERHISTORY, STEPCOUNTERHISTORY_TIME);
-          int d = testAll(false);
-          if (d<bestDiff) {
-            printf("           BEST %d\n", d);
-            bestDiff = d;
-            best_stepCounterThresholdLo = stepCounterThresholdLo;
-            best_stepCounterThresholdHi = stepCounterThresholdHi;
-            best_stepCounterHistory = STEPCOUNTERHISTORY;
-            best_stepCounterHistoryTime = STEPCOUNTERHISTORY_TIME;
-          }
-        }
-      }
+  for (stepCounterThreshold = STEPCOUNTERTHRESHOLD_MIN; stepCounterThreshold<=STEPCOUNTERTHRESHOLD_MAX; stepCounterThreshold+=STEPCOUNTERTHRESHOLD_STEP) {
+    printf("testing %d \n", stepCounterThreshold);
+    int d = testAll(false);
+    if (d<bestDiff) {
+      printf("           BEST %d\n", d);
+      bestDiff = d;
+      best_stepCounterThreshold = stepCounterThreshold;
     }
   }
 
   printf("best difference %d\n", int_sqrt32(d));
-  printf("stepCounterThresholdLo %d\n", best_stepCounterThresholdLo);
-  printf("stepCounterThresholdHi %d\n", best_stepCounterThresholdHi);
-  printf("stepCounterHistory %d\n", best_stepCounterHistory);
-  printf("stepCounterHistoryTime %d\n", best_stepCounterHistoryTime);
+  printf("stepCounterThreshold %d\n", best_stepCounterThreshold);
   return 0;
 }
