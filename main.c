@@ -7,12 +7,21 @@
 #include <stdbool.h>
 
 #define PATH "data/"
-#define FILECOUNT  5
-//const char *FILES[FILECOUNT] = {"HughB-walk-1834.csv","HughB-driving-36min.csv","HughB-driving-29min.csv","HughB1.csv","HughB0.csv","HughB2.csv","HughB-nosteps1.csv","HughB-nosteps2.csv","HughB-nosteps3.csv"};
-const char *FILES[FILECOUNT] = {"HughB-walk-1834.csv","HughB-walk-2331.csv","HughB-driving-36min.csv","HughB-driving-29min.csv","HughB-working-1h.csv"};
-int EXPECTED_STEPS[FILECOUNT] = {1834, 2331, 0, 0};
+#define FILECOUNT 7
+
+const char *FILES[FILECOUNT] = {
+ "HughB-walk-1834.csv",
+ "HughB-walk-2331.csv",
+ "HughB-walking-2350.csv",
+ "HughB-driving-36min.csv",
+ "HughB-driving-29min.csv",
+ "HughB-working-1h.csv",
+ "HughB-work-66.csv"
+};
+
+int EXPECTED_STEPS[FILECOUNT] = {1834, 2331, 2350, 0, 0, 0, 66};
 // how much do we care about these?
-int HOWMUCH[FILECOUNT] = {5,5,5,5,5};
+int HOWMUCH[FILECOUNT] = {5,5,5, 5,5, 5,5};
 
 #define DEBUG 0
 #define STEPCOUNT_CONFIGURABLE
