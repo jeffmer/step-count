@@ -7,11 +7,12 @@
 #include <stdbool.h>
 
 #define PATH "data/"
-#define FILECOUNT  9
-const char *FILES[FILECOUNT] = {"HughB-walk-1834.csv","HughB-driving-36min.csv","HughB-driving-29min.csv","HughB1.csv","HughB0.csv","HughB2.csv","HughB-nosteps1.csv","HughB-nosteps2.csv","HughB-nosteps3.csv"};
-int EXPECTED_STEPS[FILECOUNT] = {1834,       0, 0, 150,          150,               150,      0, 0, 0};
+#define FILECOUNT  5
+//const char *FILES[FILECOUNT] = {"HughB-walk-1834.csv","HughB-driving-36min.csv","HughB-driving-29min.csv","HughB1.csv","HughB0.csv","HughB2.csv","HughB-nosteps1.csv","HughB-nosteps2.csv","HughB-nosteps3.csv"};
+const char *FILES[FILECOUNT] = {"HughB-walk-1834.csv","HughB-walk-2331.csv","HughB-driving-36min.csv","HughB-driving-29min.csv","HughB-working-1h.csv"};
+int EXPECTED_STEPS[FILECOUNT] = {1834, 2331, 0, 0};
 // how much do we care about these?
-int HOWMUCH[FILECOUNT] = {5,      5,5,1,          1,       1,        1,         1,      1};
+int HOWMUCH[FILECOUNT] = {5,5,5,5,5};
 
 #define DEBUG 0
 #define STEPCOUNT_CONFIGURABLE
@@ -114,16 +115,17 @@ void testStepCount(char *filename, char *outfile) {
 static int testAll(bool outputFiles) {
   int fileCnt = 0;
   int differences = 0;
+  if (outputFiles) printf("File, Expected, Simulated, Diff, (Orignal)\n");
   while (fileCnt < FILECOUNT) {
     char buf[256], obuf[256];
     strcpy(buf, PATH);
     strcat(buf, FILES[fileCnt]);
     strcpy(obuf, buf);
     strcat(obuf, ".out.csv");
-    if (outputFiles) printf("VVV %s\n", FILES[fileCnt]);
+    //if (outputFiles) printf("VVV %s\n", FILES[fileCnt]);
     testStepCount(buf, outputFiles ? obuf : NULL);
-    if (outputFiles) printf("^^^ %s steps %d (orig %d, expected %d)\n\n", FILES[fileCnt], stepCounter, origStepCounter, EXPECTED_STEPS[fileCnt]);
-
+    if (outputFiles) printf("%s, %d, %d, %d, (%d)\n", FILES[fileCnt], EXPECTED_STEPS[fileCnt],
+			    stepCounter,  stepCounter - EXPECTED_STEPS[fileCnt], origStepCounter);
     int d = stepCounter - EXPECTED_STEPS[fileCnt];
     differences += d*d*HOWMUCH[fileCnt];
 
@@ -139,7 +141,7 @@ int main(int argc, char *argv[]) {
   printf("----------------------------------\n");
 
   bool bruteForce = false;
-  printf("argc %d\n",argc);
+  //printf("argc %d\n",argc);
   if (argc>1) {
     if (strcmp(argv[1],"--bruteforce") == 0) { // match
       bruteForce = true;
