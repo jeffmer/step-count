@@ -16,7 +16,7 @@ const char *FILES[FILECOUNT] = {
  "HughB-driving-36min.csv",
  "HughB-driving-29min.csv",
  "HughB-working-1h.csv",
- "HughB-work-66.csv"
+ "Hughb-work-66.csv"
 };
 
 int EXPECTED_STEPS[FILECOUNT] = {1834, 2331, 2350, 0, 0, 0, 66};
@@ -124,7 +124,11 @@ void testStepCount(char *filename, char *outfile) {
 static int testAll(bool outputFiles) {
   int fileCnt = 0;
   int differences = 0;
-  if (outputFiles) printf("File, Expected, Simulated, Diff, (Orignal)\n");
+  // show the config and output format
+  if (outputFiles) {
+    printf("X_STEPS = %d, RAW_THRESHOLD = %d\n", X_STEPS, RAW_THRESHOLD);
+    printf("File, Expected, Simulated, Diff, (Orignal)\n");
+  }
   while (fileCnt < FILECOUNT) {
     char buf[256], obuf[256];
     strcpy(buf, PATH);
