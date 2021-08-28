@@ -7,22 +7,43 @@
 #include <stdbool.h>
 
 #define PATH "data/"
-#define FILECOUNT 8
 
+// all test data
+/*
+#define FILECOUNT 10
 const char *FILES[FILECOUNT] = {
  "HughB-walk-1834.csv",
  "HughB-walk-2331.csv",
- "HughB-walking-2350.csv",
- "HughB-driving-36min.csv",
- "HughB-driving-29min.csv",
- "HughB-working-1h.csv",
+ "HughB-walk-2350.csv",
+ "HughB-walk-6605.csv",
+ 
+ "HughB-drive-36min-0.csv",
+ "HughB-drive-29min-0.csv",
+ "HughB-drive-18.csv",
+ 
+ "HughB-work-0.csv",
  "Hughb-work-66.csv",
  "HughB-mixed-390.csv"
 };
 
-int EXPECTED_STEPS[FILECOUNT] = {1834,2331,2350, 0,0, 0,66, 390};
-// how much do we care about these?
-int HOWMUCH[FILECOUNT] = {5,5,5, 5,5, 5,5, 5};
+int EXPECTED_STEPS[FILECOUNT] = {1834,2331,2350,6605,  0,0,18,  0,66,390};
+int HOWMUCH[FILECOUNT] = {5,5,5,5,  5,5,5,  5,5,5}; // how much do we care about these?
+*/
+
+// a typical day test case
+#define FILECOUNT 7
+const char *FILES[FILECOUNT] = {
+ "HughB-walk-6605.csv",
+ "HughB-walk-2350.csv",
+ "HughB-drive-36min-0.csv",
+ "HughB-drive-29min-0.csv",
+ "HughB-work-66.csv",
+ "HughB-work-66.csv",
+ "HughB-mixed-390.csv"
+};
+
+int EXPECTED_STEPS[FILECOUNT] = {6605,2350,  0,0,  66,66,  390};
+int HOWMUCH[FILECOUNT] = {5,5,5,5,5,5,5}; // how much do we care about these?
 
 #define DEBUG 0
 #define STEPCOUNT_CONFIGURABLE
@@ -54,6 +75,7 @@ void stepCount(int newx, int newy, int newz) {
   acc.y = newy;
   acc.z = newz;
   accMagSquared = acc.x*acc.x + acc.y*acc.y + acc.z*acc.z;
+
   // original step counter
   if (accMagSquared < origStepCounterThresholdLow)
     origStepWasLow = true;
