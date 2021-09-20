@@ -153,7 +153,7 @@ static int testAll(bool outputFiles) {
   // show the config and output format
   if (outputFiles) {
     printf("X_STEPS = %d, RAW_THRESHOLD = %d\n", X_STEPS, RAW_THRESHOLD);
-    printf("File, Expected, Simulated, Diff, (Orignal)\n");
+    printf("File, Expected, Simulated, Diff, %, (Orignal)\n");
   }
   while (fileCnt < FILECOUNT) {
     char buf[256], obuf[256];
@@ -163,11 +163,18 @@ static int testAll(bool outputFiles) {
     strcat(obuf, ".out.csv");
     //if (outputFiles) printf("VVV %s\n", FILES[fileCnt]);
     testStepCount(buf, outputFiles ? obuf : NULL);
-    if (outputFiles) printf("%s, %d, %d, %d, (%d)\n", FILES[fileCnt], EXPECTED_STEPS[fileCnt],
-			    stepCounter,  stepCounter - EXPECTED_STEPS[fileCnt], origStepCounter);
+
+    // work out accuracy %
+    float pc;
+    if (EXPECTED_STEPS[fileCnt] != 0)
+      pc = (100*(float)stepCounter / (float)EXPECTED_STEPS[fileCnt]);
+    else
+      pc = 0.00;
+   
+    if (outputFiles) printf("%s, %d, %d, %d, %2.2f %%, (%d)\n", FILES[fileCnt], EXPECTED_STEPS[fileCnt],
+			    stepCounter,  stepCounter - EXPECTED_STEPS[fileCnt], pc, origStepCounter);
     int d = stepCounter - EXPECTED_STEPS[fileCnt];
     differences += d*d*HOWMUCH[fileCnt];
-
     fileCnt++;
   }
 
