@@ -30,11 +30,12 @@ int EXPECTED_STEPS[FILECOUNT] = {1834,2331,2350,6605,  0,0,18,  0,66,390};
 int HOWMUCH[FILECOUNT] = {5,5,5,5,  5,5,5,  5,5,5}; // how much do we care about these?
 */
 
-#define FILECOUNT 11
+#define FILECOUNT 12
 const char *FILES[FILECOUNT] = {
  "HughB-walk-6605.csv",
  "HughB-walk-2350.csv",
  "HughB-walk-a3070-b3046.csv",
+ "HughB-walk-a10021-b10248.csv",
  "HughB-drive-36min-0.csv",
  "HughB-drive-29min-0.csv",
  "HughB-drive-a3-b136.csv",
@@ -45,8 +46,8 @@ const char *FILES[FILECOUNT] = {
  "HughB-housework-a958-b2658.csv"
 };
 
-int EXPECTED_STEPS[FILECOUNT] = {6605,2350,3070,  0,0,3,  66,66,390,260,958};
-int HOWMUCH[FILECOUNT] = {5,5,5, 5,5,5, 5,5,5,5,5}; // how much do we care about these?
+int EXPECTED_STEPS[FILECOUNT] = {6605,2350,3070,10021,  0,0,3,  66,66,390,260,958};
+int HOWMUCH[FILECOUNT] = {5,5,5,5,  5,5,5, 5,5,5,5,5}; // how much do we care about these?
 
 #define DEBUG 0
 #define STEPCOUNT_CONFIGURABLE
