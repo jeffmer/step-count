@@ -30,11 +30,12 @@ int EXPECTED_STEPS[FILECOUNT] = {1834,2331,2350,6605,  0,0,18,  0,66,390};
 int HOWMUCH[FILECOUNT] = {5,5,5,5,  5,5,5,  5,5,5}; // how much do we care about these?
 */
 
-#define FILECOUNT 11
+#define FILECOUNT 12
 const char *FILES[FILECOUNT] = {
  "HughB-walk-6605.csv",
  "HughB-walk-2350.csv",
  "HughB-walk-a3070-b3046.csv",
+ "HughB-walk-a10021-b10248.csv",
  "HughB-drive-36min-0.csv",
  "HughB-drive-29min-0.csv",
  "HughB-drive-a3-b136.csv",
@@ -45,8 +46,8 @@ const char *FILES[FILECOUNT] = {
  "HughB-housework-a958-b2658.csv"
 };
 
-int EXPECTED_STEPS[FILECOUNT] = {6605,2350,3070,  0,0,3,  66,66,390,260,958};
-int HOWMUCH[FILECOUNT] = {5,5,5, 5,5,5, 5,5,5,5,5}; // how much do we care about these?
+int EXPECTED_STEPS[FILECOUNT] = {6605,2350,3070,10021,  0,0,3,  66,66,390,260,958};
+int HOWMUCH[FILECOUNT] = {5,5,5,5,  5,5,5, 5,5,5,5,5}; // how much do we care about these?
 
 #define DEBUG 0
 #define STEPCOUNT_CONFIGURABLE
@@ -153,7 +154,7 @@ static int testAll(bool outputFiles) {
   // show the config and output format
   if (outputFiles) {
     printf("X_STEPS = %d, RAW_THRESHOLD = %d\n", X_STEPS, RAW_THRESHOLD);
-    printf("File, Expected, Simulated, Diff, (Orignal)\n");
+    printf("File, Expected, Simulated, Diff, %, (Orignal)\n");
   }
   while (fileCnt < FILECOUNT) {
     char buf[256], obuf[256];
@@ -163,11 +164,18 @@ static int testAll(bool outputFiles) {
     strcat(obuf, ".out.csv");
     //if (outputFiles) printf("VVV %s\n", FILES[fileCnt]);
     testStepCount(buf, outputFiles ? obuf : NULL);
-    if (outputFiles) printf("%s, %d, %d, %d, (%d)\n", FILES[fileCnt], EXPECTED_STEPS[fileCnt],
-			    stepCounter,  stepCounter - EXPECTED_STEPS[fileCnt], origStepCounter);
+
+    // work out accuracy %
+    float pc;
+    if (EXPECTED_STEPS[fileCnt] != 0)
+      pc = (100*(float)stepCounter / (float)EXPECTED_STEPS[fileCnt]);
+    else
+      pc = 0.00;
+   
+    if (outputFiles) printf("%s, %d, %d, %d, %2.2f %%, (%d)\n", FILES[fileCnt], EXPECTED_STEPS[fileCnt],
+			    stepCounter,  stepCounter - EXPECTED_STEPS[fileCnt], pc, origStepCounter);
     int d = stepCounter - EXPECTED_STEPS[fileCnt];
     differences += d*d*HOWMUCH[fileCnt];
-
     fileCnt++;
   }
 
