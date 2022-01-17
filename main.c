@@ -154,7 +154,7 @@ static int testAll(bool outputFiles) {
   // show the config and output format
   if (outputFiles) {
     printf("X_STEPS = %d, RAW_THRESHOLD = %d\n", X_STEPS, RAW_THRESHOLD);
-    printf("File, Expected, Simulated, Diff, %, (Orignal)\n");
+    printf("File, Expected, Simulated, Diff, %%, (Orignal)\n");
   }
   while (fileCnt < FILECOUNT) {
     char buf[256], obuf[256];
