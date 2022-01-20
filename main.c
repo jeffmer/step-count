@@ -30,7 +30,7 @@ int EXPECTED_STEPS[FILECOUNT] = {1834,2331,2350,6605,  0,0,18,  0,66,390};
 int HOWMUCH[FILECOUNT] = {5,5,5,5,  5,5,5,  5,5,5}; // how much do we care about these?
 */
 
-#define FILECOUNT 12
+#define FILECOUNT 13
 const char *FILES[FILECOUNT] = {
  "HughB-walk-6605.csv",
  "HughB-walk-2350.csv",
@@ -43,11 +43,21 @@ const char *FILES[FILECOUNT] = {
  "HughB-work-66.csv",
  "HughB-mixed-390.csv",
  "HughB-general-a260-b573.csv",
- "HughB-housework-a958-b2658.csv"
+ "HughB-housework-a958-b2658.csv",
+ "MrPloppy-stationary-0.csv"
 };
 
-int EXPECTED_STEPS[FILECOUNT] = {6605,2350,3070,10021,  0,0,3,  66,66,390,260,958};
-int HOWMUCH[FILECOUNT] = {5,5,5,5,  5,5,5, 5,5,5,5,5}; // how much do we care about these?
+int EXPECTED_STEPS[FILECOUNT] = {6605,2350,3070,10021,  0,0,3,  66,66,390,260,958, 0};
+int HOWMUCH[FILECOUNT] = {1,1,1,1,  2,2,2, 2,2,2,2,2, 10}; // how much do we care about these?
+/* Some files have more steps in than others, so we (probably) want to
+put less weight on those than others. For instance:
+
+* when driving you might detect 60 steps when you should have 0
+* when walking you detect 6060 steps when you did 6000 
+
+Probably we care more about the accuracy driving (or about the
+logs that are done over a longer time period)
+*/
 
 #define DEBUG 0
 #define STEPCOUNT_CONFIGURABLE
@@ -154,7 +164,7 @@ static int testAll(bool outputFiles) {
   // show the config and output format
   if (outputFiles) {
     printf("X_STEPS = %d, RAW_THRESHOLD = %d\n", X_STEPS, RAW_THRESHOLD);
-    printf("File, Expected, Simulated, Diff, %%, (Orignal)\n");
+    printf("File, Expected, Simulated, Diff, %%, (Original)\n");
   }
   while (fileCnt < FILECOUNT) {
     char buf[256], obuf[256];
