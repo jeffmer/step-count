@@ -30,7 +30,7 @@ int EXPECTED_STEPS[FILECOUNT] = {1834,2331,2350,6605,  0,0,18,  0,66,390};
 int HOWMUCH[FILECOUNT] = {5,5,5,5,  5,5,5,  5,5,5}; // how much do we care about these?
 */
 
-#define FILECOUNT 13
+#define FILECOUNT 17
 const char *FILES[FILECOUNT] = {
  "HughB-walk-6605.csv",
  "HughB-walk-2350.csv",
@@ -44,11 +44,15 @@ const char *FILES[FILECOUNT] = {
  "HughB-mixed-390.csv",
  "HughB-general-a260-b573.csv",
  "HughB-housework-a958-b2658.csv",
- "MrPloppy-stationary-0.csv"
+ "MrPloppy-stationary-0.csv",
+ "mrploppy_train1.csv",
+ "mrploppy_train2.csv",
+ "mrploppy_walk600.csv",
+ "mrploppy_walk500.csv"
 };
 
-int EXPECTED_STEPS[FILECOUNT] = {6605,2350,3070,10021,  0,0,3,  66,66,390,260,958, 0};
-int HOWMUCH[FILECOUNT] = {1,1,1,1,  2,2,2, 2,2,2,2,2, 10}; // how much do we care about these?
+int EXPECTED_STEPS[FILECOUNT] = {6605,2350,3070,10021,  0,0,3,  66,66,390,260,958,0,0,0,600,500};
+int HOWMUCH[FILECOUNT] = {1,1,1,1,  2,2,2, 2,2,2,2,2,10,2,2,2,2}; // how much do we care about these?
 /* Some files have more steps in than others, so we (probably) want to
 put less weight on those than others. For instance:
 
@@ -62,7 +66,7 @@ logs that are done over a longer time period)
 #define DEBUG 0
 #define STEPCOUNT_CONFIGURABLE
 
-#include "../Espruino/libs/misc/stepcount.c"
+#include "./stepcount.c"
 
 typedef struct {
   short x,y,z;
@@ -163,6 +167,7 @@ static int testAll(bool outputFiles) {
   int differences = 0;
   // show the config and output format
   if (outputFiles) {
+    printf("NSAMPLE = %d\n", NSAMPLE);
     printf("X_STEPS = %d, RAW_THRESHOLD = %d\n", X_STEPS, RAW_THRESHOLD);
     printf("File, Expected, Simulated, Diff, %%, (Original)\n");
   }
